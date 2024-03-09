@@ -5,13 +5,13 @@ import Footer from "../../Components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
-import { useSelector } from "react-redux";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider ";
 const Register = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const isAuthenticated = useSelector(
-    (state) => state.authentications?.isAuthenticated || ""
-  );
+  const { isLogin } = useCombinedContext();
+  console.log("rstgfgtsdf");
+
   const [input, setInput] = useState({
     Name: "",
     Number: "",
@@ -76,38 +76,25 @@ const Register = () => {
     }
   };
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     setLoading(false);
 
     e.preventDefault();
     try {
-      axios
-        .post(
-          "https://musicart-full-stack-project-backend.onrender.com/register",
-          {
-            name: input.Name,
-            number: input.Number,
-            email: input.Email,
-            password: input.Password,
-          }
-        )
-        .then((response) => {
-          localStorage.setItem(
-            "LoginJwtToken",
-            JSON.stringify(response.data.token)
-          );
-          localStorage.setItem(
-            "userEmail",
-            JSON.stringify(response.data.email)
-          );
+      const response = await axios.post("http://localhost:3000/register", {
+        name: input.Name,
+        number: input.Number,
+        email: input.Email,
+        password: input.Password,
+      });
+      localStorage.setItem(
+        "LoginJwtToken",
+        JSON.stringify(response.data.token)
+      );
+      localStorage.setItem("userEmail", JSON.stringify(response.data.email));
 
-          setLoading(false);
-          navigate("/");
-        })
-        .catch((error) => {
-          alert("Error:" + error.response.data);
-          setLoading(true);
-        });
+      setLoading(false);
+      navigate("/");
 
       setInput({
         Name: "",
@@ -124,7 +111,8 @@ const Register = () => {
         Password: "",
       });
     } catch (error) {
-      console.log(error);
+      alert("Error:" + error.response.data);
+      setLoading(true);
     }
   };
 
@@ -132,7 +120,7 @@ const Register = () => {
     <div>
       {loading === true ? (
         <div>
-          {isAuthenticated === true ? (
+          {isLogin === true ? (
             navigate("/")
           ) : (
             <div className="container">

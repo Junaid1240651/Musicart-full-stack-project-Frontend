@@ -5,70 +5,75 @@ import BackToProductPageBtn from "../../Components/BackToProductPageBtn/BackToPr
 import "./Cart.css";
 import searchImage from "../../images/searchImage.png";
 import cartBagImage from "../../images/cartBagImage.png";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import { FetchCartProduct } from "../../FetchCartProduct/FetchCartProduct";
 import Footer from "../../Components/Footer/Footer";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider ";
 
 const Cart = () => {
+  const { cartItem } = useCombinedContext();
+  const { getCartItem } = FetchCartProduct();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
   const [btnClick, setbtnClick] = useState();
   const [btnId, setbtnId] = useState();
   const [totalCartAmount, setTotalCartAmount] = useState();
-  const { getCartItem } = FetchCartProduct();
   const [userEmail, setUserEmail] = useState();
+  const token = localStorage.getItem("LoginJwtToken");
 
-  const cartValue = useSelector((state) => state.authentications.cartValue);
-  const cartQuantityHandler = (id, index3) => {
+  const cartQuantityHandler = async (id, index3) => {
     setbtnClick(true);
     setbtnId(id);
-    axios
-      .post(
-        "https://musicart-full-stack-project-backend.onrender.com/getCartProduct",
+    try {
+      await axios.post(
+        "http://localhost:3000/getCartProduct",
         {
           productQuantity: index3,
           cartUpdateId: id,
           userEmail: userEmail.replace(/"|'/g, ""),
-        }
-      )
-      .then(function (response) {
-        getCartItem();
-        setbtnClick(false);
-      })
-
-      .catch((err) => {
-        alert(err.message);
-      });
-  };
-  const placeOrderHandler = () => {
-    setLoading2(true);
-    navigate("/checkout");
-
-    axios
-      .post(
-        "https://musicart-full-stack-project-backend.onrender.com/checkOutProduct",
+        },
         {
-          forCheckOutPageChaker: userEmail.replace(/"|'/g, ""),
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
         }
-      )
-      .then(function (response) {
-        if (response) {
-          setLoading2(false);
-          navigate("/checkout");
+      );
+
+      getCartItem();
+      setbtnClick(false);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const placeOrderHandler = async () => {
+    setLoading2(true);
+    try {
+      await axios.post(
+        "http://localhost:3000/checkOutProduct",
+        {
+          placeOrderHandler: "placeOrderHandler",
+        },
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
         }
-      })
-      .catch((err) => {
-        alert(err.message);
-      });
+      );
+
+      setLoading2(false);
+      navigate("/checkout");
+    } catch (error) {
+      alert(error.message);
+    }
   };
   const totalCartamount = () => {
     let totalAmount = 0;
-    if (cartValue) {
-      cartValue.map((data) => {
+    if (cartItem) {
+      cartItem.map((data) => {
         totalAmount += Number(
           data.productQuantity * data.productPrice.replace(/\,/g, "")
         );
@@ -80,18 +85,38 @@ const Cart = () => {
   };
   useEffect(() => {
     totalCartamount();
-  }, [cartValue, btnClick]);
+  }, [cartItem, btnClick]);
 
   useEffect(() => {
     setUserEmail(localStorage.getItem("userEmail"));
   }, []);
-
+  const cartRemoveHandler = async (e) => {
+    const productId = e.target.id;
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/removeCartProduct",
+        {
+          productId: productId,
+        },
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
+        }
+      );
+      alert(response.data);
+      getCartItem();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
   return (
     <div>
+      <OfferNavbar />
+      <Navbar />
       <div>
         {loading === true ? (
           <div>
-            <OfferNavbar />
             <div className="searchContainer">
               <div className="searchDiv">
                 <div className="search">
@@ -101,21 +126,20 @@ const Cart = () => {
               </div>
             </div>
             <div className="viewCartContainer">
-              <Navbar Cart={"View Cart"} />
               <BackToProductPageBtn />
 
               <div className="cartImgDiv">
                 <img src={cartBagImage} />
                 <p>My Cart</p>
               </div>
-              {cartValue && cartValue.length > 0 ? (
+              {cartItem && cartItem.length > 0 ? (
                 <div>
-                  {cartValue ? (
+                  {cartItem ? (
                     <div className="cartItemListContainer">
                       <div className="artItemListDiv">
                         <hr className="hrLine" />
-                        {cartValue
-                          ? cartValue.map((data) => (
+                        {cartItem
+                          ? cartItem.map((data) => (
                               <div>
                                 <div className="productDiv">
                                   <div>
@@ -143,7 +167,7 @@ const Cart = () => {
                                   <div className="QuantityDiv">
                                     <p>Quantity</p>
                                     <div className="dropdownContainerr">
-                                      <div class="dropdown">
+                                      <div className="dropdownn">
                                         {btnClick === true &&
                                         btnId === data._id ? (
                                           <button>
@@ -157,7 +181,7 @@ const Cart = () => {
                                           </button>
                                         )}
 
-                                        <div class="dropdown-content">
+                                        <div className="dropdown-contentt">
                                           <p
                                             onClick={() =>
                                               cartQuantityHandler(data._id, 1)
@@ -221,7 +245,6 @@ const Cart = () => {
                                           </p>
                                         </div>
                                       </div>
-                                      <div></div>
                                     </div>
                                   </div>
                                   <div className="totalPriceDiv">
@@ -232,6 +255,15 @@ const Cart = () => {
                                         data.productPrice.replace(/\,/g, "")
                                       ) * data.productQuantity}
                                     </p>
+                                  </div>
+                                  <div className="cartItemRemove">
+                                    <p>Remove</p>
+                                    <button
+                                      id={data._id}
+                                      onClick={cartRemoveHandler}
+                                    >
+                                      Delete
+                                    </button>
                                   </div>
                                 </div>
                                 <hr className="hrLine" />
@@ -289,9 +321,9 @@ const Cart = () => {
               🡠{" "}
             </button>
             <div className="asdikergq">
-              {cartValue ? (
+              {cartItem ? (
                 <div className="ADESFOIPSE">
-                  {cartValue.map((data) => (
+                  {cartItem.map((data) => (
                     <div className="ioeiow">
                       <div className="ASEFOIS">
                         <img
@@ -317,7 +349,7 @@ const Cart = () => {
                           </p>
                           <p>Convinance Fee ₹45</p>
                         </div>
-                        <div className="akjsasdgfs">
+                        <div className="totalDiv">
                           <p>Total:</p>
                           <p>
                             ₹{Number(data.productPrice.replace(/\,/g, "")) + 45}
@@ -327,25 +359,28 @@ const Cart = () => {
                     </div>
                   ))}
 
-                  <div className="WAEERWF">
+                  <div className="totalAmtDiv">
                     <p>
                       Total Amount ₹
                       {totalCartAmount ? totalCartAmount + 45 : ""}
                     </p>
                     {loading2 === true ? (
-                      <button className="aesdoawed">
+                      <button className="place-order">
                         <i class="fa fa-spinner fa-spin"></i>
                         Loading
                       </button>
                     ) : (
-                      <button className="aesdoawed" onClick={placeOrderHandler}>
+                      <button
+                        className="place-order"
+                        onClick={placeOrderHandler}
+                      >
                         Place Order
                       </button>
                     )}
                   </div>
                 </div>
               ) : (
-                <p className="eaqwiuiuweqewqqasxaS">Cart Is Empty🙁</p>
+                <p className="noProduct">Cart Is Empty🙁</p>
               )}
             </div>
           </div>

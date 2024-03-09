@@ -3,7 +3,6 @@ import OfferNavbar from "../../Components/OfferNavbar/OfferNavbar";
 import Navbar from "../../Components/Navbar/Navbar";
 import BackToProductPageBtn from "../../Components/BackToProductPageBtn/BackToProductPageBtn";
 import "./CheckOutPage.css";
-import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,59 +10,42 @@ import { FetchCartProduct } from "../../FetchCartProduct/FetchCartProduct";
 import axios from "axios";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import Footer from "../../Components/Footer/Footer";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider ";
 
 const CheckOutPage = () => {
   const [totalCartAmount, setTotalCartAmount] = useState();
   const [userEmail, setUserEmail] = useState();
   const [checkOutCartDetailis, setCheckOutCartDetailis] = useState();
-  const [checkOutProductOrNot, setCheckOutProductOrNot] = useState();
   const [loading, setLoading] = useState(false);
-
+  const token = localStorage.getItem("LoginJwtToken");
+  const { cartItem } = useCombinedContext();
   const { getCartItem } = FetchCartProduct();
-  const cartValue = useSelector((state) => state.authentications.cartValue);
-
   const navigate = useNavigate();
 
-  const placeOrderHandler = () => {
+  const placeOrderHandler = async () => {
     setLoading(true);
-
-    if (checkOutProductOrNot === true) {
-      axios
-        .post(
-          "https://musicart-full-stack-project-backend.onrender.com/checkOutProduct",
-          {
-            forCheckOutPageChaker: userEmail.replace(/"|'/g, ""),
-          }
-        )
-        .then(function (response) {
-          alert("Check out product Delete Successfully!");
-          setLoading(false);
-
-          navigate("/success");
-        })
-        .catch((err) => {
-          alert(err.message);
-        });
-    } else {
+    try {
       setLoading(true);
 
-      axios
-        .post(
-          "https://musicart-full-stack-project-backend.onrender.com/removeCartProduct",
-          {
-            email: userEmail.replace(/"|'/g, ""),
-          }
-        )
-        .then(function (response) {
-          alert(response.data);
-          navigate("/success");
-          setLoading(false);
+      await axios;
+      const response = await axios.post(
+        "http://localhost:3000/orderProduct",
+        {
+          email: userEmail.replace(/"|'/g, ""),
+        },
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
+        }
+      );
+      alert(response.data);
+      navigate("/success");
+      setLoading(false);
 
-          getCartItem();
-        })
-        .catch((err) => {
-          alert(err.message);
-        });
+      cartProduct();
+    } catch (error) {
+      console.log(error.message);
     }
   };
   useEffect(() => {
@@ -71,71 +53,46 @@ const CheckOutPage = () => {
   }, []);
   useEffect(() => {
     checkOutProduct();
-  }, [cartValue]);
-  const checkOutProduct = () => {
-    axios
-      .get(
-        "https://musicart-full-stack-project-backend.onrender.com/checkOutProduct"
-      )
-      .then(function (response) {
-        const filteredData = response.data.filter(
-          (data) =>
-            data.checkOutProductEmail ===
-              localStorage.getItem("userEmail").replace(/"|'/g, "") &&
-            data.checkOutPageChaker === true
-        );
-        if (filteredData.length > 0) {
-          axios
-            .get("https://musicart-full-stack-project-backend.onrender.com/")
-            .then(function (response2) {
-              setCheckOutProductOrNot(true);
-              filteredData.map((dataa) => {
-                const result = response2.data.filter((data) => {
-                  if (data._id === dataa.checkOutProductId) {
-                    return data;
-                  }
-                });
-                setCheckOutCartDetailis(result);
-                let totalAmount = 0;
-
-                result.map((data) => {
-                  totalAmount += Number(
-                    data.productQuantity
-                      ? data.productQuantity
-                      : 1 * data.productPrice.replace(/\,/g, "")
-                  );
-                });
-                setTotalCartAmount(totalAmount);
-              });
-            });
-        } else {
-          setCheckOutProductOrNot(false);
-
-          setCheckOutCartDetailis(cartValue);
-          setCheckOutCartDetailis(cartValue);
-          let totalAmount = 0;
-
-          cartValue.map((data) => {
-            totalAmount += Number(
-              data.productQuantity * data.productPrice.replace(/\,/g, "")
-            );
-          });
-          setTotalCartAmount(totalAmount);
+  }, [cartItem]);
+  console.log("rstgfgtsdf");
+  const cartProduct = async () => {
+    const result = await FetchCartProduct();
+    getCartItem(result);
+  };
+  const checkOutProduct = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/checkOutProduct",
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
         }
-      })
-      .catch(function (error) {
-        console.log("Error:", error);
+      );
+      console.log(response.data);
+      setCheckOutCartDetailis(response.data);
+
+      let total = 0;
+      response.data.forEach((data) => {
+        total +=
+          Number(data.productQuantity ? data.productQuantity : 1) *
+          Number(data.productPrice.replace(/\,/g, ""));
       });
+
+      setTotalCartAmount(total);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <div>
+      <OfferNavbar />
+      <Navbar />
       {checkOutCartDetailis ? (
         <div>
-          <OfferNavbar />
           <div className="checkOutContainer">
-            <Navbar CheckOut={"CheckOut"} />
-            <div className="jhbdjadss">
+            <div>
               <BackToProductPageBtn />
             </div>
             <div className="checkoutText">
@@ -250,9 +207,7 @@ const CheckOutPage = () => {
                 </div>
               </div>
             ) : (
-              <p className="eaqwiuiuweqewqqasxaS">
-                No Product Avialble In Your Cart🙁
-              </p>
+              <p className="noProduct">No Product Avialble In Your Cart🙁</p>
             )}
           </div>
         </div>

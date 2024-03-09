@@ -4,13 +4,12 @@ import MusicLogo from "../../images/musicLogo.png";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
-import { useSelector } from "react-redux";
 import "../Register/Register.css";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider ";
 
 const Login = () => {
-  const isAuthenticated = useSelector(
-    (state) => state.authentications?.isAuthenticated || ""
-  );
+  const { setIsLogin } = useCombinedContext();
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
@@ -55,38 +54,27 @@ const Login = () => {
     }
   };
 
-  const SignHandler = (event) => {
+  const SignHandler = async (event) => {
     setLoading(false);
 
     event.preventDefault();
 
     try {
-      axios
-        .post(
-          "https://musicart-full-stack-project-backend.onrender.com/login",
-          {
-            email: input.EmailNumber,
-            password: input.Password,
-          }
-        )
-        .then((response) => {
-          localStorage.setItem(
-            "LoginJwtToken",
-            JSON.stringify(response.data.token)
-          );
-          localStorage.setItem(
-            "userEmail",
-            JSON.stringify(response.data.email)
-          );
-          setLoading(false);
-          navigate("/");
-        })
-        .catch((error) => {
-          alert("Error:" + error.response.data);
-          setLoading(true);
-        });
+      const response = await axios.post("http://localhost:3000/login", {
+        email: input.EmailNumber,
+        password: input.Password,
+      });
+      localStorage.setItem(
+        "LoginJwtToken",
+        JSON.stringify(response.data.token)
+      );
+      localStorage.setItem("userEmail", JSON.stringify(response.data.email));
+      setLoading(false);
+      setIsLogin(true);
+      navigate("/");
     } catch (error) {
-      console.error("Error:", error);
+      alert("Error:" + error.response.data);
+      setLoading(true);
     }
 
     setInput({
@@ -103,63 +91,59 @@ const Login = () => {
     <div className="loginContainer">
       {loading === true ? (
         <div>
-          {isAuthenticated === true ? (
-            navigate("/")
-          ) : (
-            <div className="container LoginContainer">
-              <div>
-                <img className="musicLogo" src={MusicLogo} alt="" />
-                <p className="musicArt">Musicart</p>
-              </div>
-              <form onSubmit={SignHandler}>
-                <p className="createAccount">Sign in </p>
-                <label>Enter your email or mobile number</label>
-                <input
-                  value={input.EmailNumber}
-                  pattern="[a-z0-9._%+-]+@gmail\.com$"
-                  required
-                  type="email"
-                  name="EmailNumber"
-                  onChange={inputHandler}
-                ></input>
-                {errorMessage ? (
-                  <p className="errorMsg">{errorMessage.EmailNumber}</p>
-                ) : (
-                  setErrorMessage("")
-                )}
-                <label>Password</label>
-                <input
-                  required
-                  value={input.Password}
-                  name="Password"
-                  onChange={inputHandler}
-                ></input>
-                {errorMessage ? (
-                  <p className="errorMsg">{errorMessage.Password}</p>
-                ) : (
-                  setErrorMessage("")
-                )}
-                <button className="continueBtn">Continue</button>
-                <p className="termAndCondition">
-                  By continuing, you agree to Musicart privacy notice and
-                  conditions of use.
-                </p>
-              </form>
-              <div className="musicDiv">
-                <div className="musicInnerDiv">
-                  <div></div>
-                  <p>New to Musicart?</p>
-                  <div></div>
-                </div>
-                <button
-                  className="createAccountBtn"
-                  onClick={() => navigate("/register")}
-                >
-                  Create your Musicart account
-                </button>
-              </div>
+          <div className="container LoginContainer">
+            <div>
+              <img className="musicLogo" src={MusicLogo} alt="" />
+              <p className="musicArt">Musicart</p>
             </div>
-          )}
+            <form onSubmit={SignHandler}>
+              <p className="createAccount">Sign in </p>
+              <label>Enter your email or mobile number</label>
+              <input
+                value={input.EmailNumber}
+                pattern="[a-z0-9._%+-]+@gmail\.com$"
+                required
+                type="email"
+                name="EmailNumber"
+                onChange={inputHandler}
+              ></input>
+              {errorMessage ? (
+                <p className="errorMsg">{errorMessage.EmailNumber}</p>
+              ) : (
+                setErrorMessage("")
+              )}
+              <label>Password</label>
+              <input
+                required
+                value={input.Password}
+                name="Password"
+                onChange={inputHandler}
+              ></input>
+              {errorMessage ? (
+                <p className="errorMsg">{errorMessage.Password}</p>
+              ) : (
+                setErrorMessage("")
+              )}
+              <button className="continueBtn">Continue</button>
+              <p className="termAndCondition">
+                By continuing, you agree to Musicart privacy notice and
+                conditions of use.
+              </p>
+            </form>
+            <div className="musicDiv">
+              <div className="musicInnerDiv">
+                <div></div>
+                <p>New to Musicart?</p>
+                <div></div>
+              </div>
+              <button
+                className="createAccountBtn"
+                onClick={() => navigate("/register")}
+              >
+                Create your Musicart account
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
         <LoadingScreen />
@@ -169,4 +153,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default React.memo(Login);

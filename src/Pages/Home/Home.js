@@ -13,10 +13,13 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import OfferNavbar from "../../Components/OfferNavbar/OfferNavbar";
 import Navbar from "../../Components/Navbar/Navbar";
-import { useSelector } from "react-redux";
 import { FetchCartProduct } from "../../FetchCartProduct/FetchCartProduct";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider ";
+import { LoginAndJWTTokenCheck } from "../../auth/LoginAndJWTTokenCheck";
 
 const Home = () => {
+  const { isLogin } = useCombinedContext();
+
   const navigate = useNavigate();
   const [apidata, setApiData] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,33 +33,35 @@ const Home = () => {
   const [inputSearch, setinputSearch] = useState([]);
   const [userEmail, setUserEmail] = useState();
   const { getCartItem } = FetchCartProduct();
-  // var apidata;
-  const isAuthenticated = useSelector(
-    (state) => state.authentications?.isAuthenticated || ""
-  );
+  const token = localStorage.getItem("LoginJwtToken");
 
-  useEffect(() => {
+  const fetchproduct = async () => {
     try {
-      axios
-        .get("https://musicart-full-stack-project-backend.onrender.com/", {
-          params: {
-            headPhoneType: headPhoneType,
-            companyType: companyType,
-            headPhoneColor: headPhoneColor,
-            headPhonePrice: headPhonePrice,
-            inputSearch: inputSearch,
-          },
-        })
-        .then(function (response) {
-          setApiData(response.data);
-          setLoading(true);
-        })
-        .catch((error) => alert(error + "Server Error"));
+      const response = await axios.get("http://localhost:3000/", {
+        params: {
+          headPhoneType: headPhoneType,
+          companyType: companyType,
+          headPhoneColor: headPhoneColor,
+          headPhonePrice: headPhonePrice,
+          inputSearch: inputSearch,
+        },
+        headers: {
+          Authorization: token,
+        },
+      });
+      setApiData(response.data);
+      // console.log(response.data);
+      setLoading(true);
     } catch (error) {
       console.log(error);
     }
+  };
+  useEffect(() => {
+    fetchproduct();
   }, [headPhoneType, companyType, headPhoneColor, headPhonePrice, inputSearch]);
-
+  // useEffect(() => {
+  //   LoginAndJWTTokenCheck();
+  // }, []);
   useEffect(() => {});
   const resetFilterHandler = () => {
     setHeadPhoneType([]);
@@ -78,26 +83,27 @@ const Home = () => {
   const gridChangeHandler2 = () => {
     setgridChange(false);
   };
-  const addToCartHandle = (id) => {
+  const addToCartHandle = async (id) => {
     setAddToCartClick(true);
     setcartId(id);
-    axios
-      .post(
-        "https://musicart-full-stack-project-backend.onrender.com/getCartProduct",
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/getCartProduct",
         {
           email: userEmail.replace(/"|'/g, ""),
-          AddToCartproductId: id,
+          CartproductId: id,
+        },
+        {
+          headers: { Authorization: token.replace(/"/g, "") },
         }
-      )
-      .then(function (response) {
-        setAddToCartClick(false);
+      );
+      setAddToCartClick(false);
 
-        alert(response.data);
-        getCartItem();
-      })
-      .catch((err) => {
-        alert(err.message);
-      });
+      alert(response.data);
+      getCartItem();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -109,8 +115,9 @@ const Home = () => {
       {loading === true ? (
         <div>
           <OfferNavbar />
+          <Navbar />
+
           <div className="homeContainer">
-            <Navbar />
             <div className="homeInnerContainer">
               <div className="offerBannerDiv">
                 <div className="offerInnerBannerDiv">
@@ -262,8 +269,11 @@ const Home = () => {
             <div>
               <div class="row">
                 {apidata
-                  ? apidata.map((data) => (
-                      <div class={gridChange === true ? "column" : "column2"}>
+                  ? apidata.map((data, index) => (
+                      <div
+                        class={gridChange === true ? "column" : "column2"}
+                        key={index}
+                      >
                         <div class="card">
                           <div class={gridChange === true ? "grid" : "grid2"}>
                             <div
@@ -275,7 +285,7 @@ const Home = () => {
                             >
                               <img
                                 className={
-                                  isAuthenticated === true
+                                  isLogin === true
                                     ? "productImage"
                                     : "productImage2"
                                 }
@@ -285,8 +295,7 @@ const Home = () => {
                                 }}
                                 src={data.productImage[0]}
                               />
-                              {gridChange === true &&
-                              isAuthenticated === true ? (
+                              {gridChange === true && isLogin === true ? (
                                 addToCartClick === false ? (
                                   <img
                                     alt=""
@@ -424,4 +433,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default React.memo(Home);

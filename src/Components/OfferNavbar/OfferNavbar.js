@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import "./OfferNavbar.css";
 import callImage from "../../images/callImage.png";
 import { useNavigate } from "react-router-dom";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider .js";
 import { LoginAndJWTTokenCheck } from "../../auth/LoginAndJWTTokenCheck.js";
-import { FetchCartProduct } from "../../FetchCartProduct/FetchCartProduct";
 
-import { useSelector } from "react-redux";
 const OfferNavbar = () => {
-  const navigate = useNavigate();
-  const { getCartItem } = FetchCartProduct();
+  const { isLogin } = useCombinedContext();
 
+  const navigate = useNavigate();
   const { handleLogout } = LoginAndJWTTokenCheck();
 
   const logoutHandler = () => {
     handleLogout();
-    getCartItem();
   };
-  const isAuthenticated = useSelector(
-    (state) => state.authentications?.isAuthenticated || ""
-  );
 
   return (
-    <div className="eghrt">
+    <div className="mainContaainer">
       <div className="commonDiv">
         <img className="callImg" src={callImage} alt="" />
         <p>912121131313</p>
@@ -34,7 +29,7 @@ const OfferNavbar = () => {
         </div>
       </div>
       <div className="logout">
-        {isAuthenticated === true ? (
+        {isLogin === true ? (
           <p onClick={logoutHandler}>Logout</p>
         ) : (
           <div>
@@ -48,4 +43,4 @@ const OfferNavbar = () => {
   );
 };
 
-export default OfferNavbar;
+export default memo(OfferNavbar);

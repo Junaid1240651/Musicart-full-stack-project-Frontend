@@ -4,23 +4,16 @@ import homeBtn from "../../images/homeBtn.png";
 import loginBtn from "../../images/loginBtn.png";
 import cartBtn from "../../images/cartBtn.png";
 import { useNavigate } from "react-router-dom";
-import { LoginAndJWTTokenCheck } from "../../auth/LoginAndJWTTokenCheck.js";
 import { FetchCartProduct } from "../../FetchCartProduct/FetchCartProduct";
-import { useSelector } from "react-redux";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider .js";
 
 const Footer = () => {
   const navigate = useNavigate();
-  const { getCartItem } = FetchCartProduct();
-
-  const { handleLogout } = LoginAndJWTTokenCheck();
+  const { isLogin } = useCombinedContext();
 
   const logoutHandler = () => {
-    handleLogout();
-    getCartItem();
+    FetchCartProduct();
   };
-  const isAuthenticated = useSelector(
-    (state) => state.authentications?.isAuthenticated || ""
-  );
 
   return (
     <div className="footer">
@@ -38,7 +31,7 @@ const Footer = () => {
 
       <div onClick={logoutHandler}>
         <img alt="" src={loginBtn} />
-        {isAuthenticated === true ? (
+        {isLogin === true ? (
           <p onClick={logoutHandler}>Logout</p>
         ) : (
           <p onClick={() => navigate("/login")}>Login</p>
@@ -48,4 +41,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default React.memo(Footer);

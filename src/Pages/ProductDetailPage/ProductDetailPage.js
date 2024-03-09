@@ -9,8 +9,8 @@ import ratingStarImage from "../../images/ratingStarImage.png";
 import LoadingScreen from "../../Components/LoadingScreen/LoadingScreen";
 import OfferNavbar from "../../Components/OfferNavbar/OfferNavbar";
 import { FetchCartProduct } from "../../FetchCartProduct/FetchCartProduct";
-import { useSelector } from "react-redux";
 import Footer from "../../Components/Footer/Footer";
+import { useCombinedContext } from "../../contextApi/CombinedContextProvider ";
 
 const ProductDetailPage = () => {
   const [apidata, setApiData] = useState("");
@@ -22,14 +22,15 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [userEmail, setUserEmail] = useState();
+  const token = localStorage.getItem("LoginJwtToken");
+  const { isLogin } = useCombinedContext();
   const { getCartItem } = FetchCartProduct();
 
-  const isAuthenticated = useSelector(
-    (state) => state.authentications?.isAuthenticated || ""
-  );
   const homeNavigate = () => {
     navigate("/");
   };
+  console.log("rstgfgtsdf");
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [imageUrls, setImageUrls] = useState([]);
 
@@ -58,92 +59,101 @@ const ProductDetailPage = () => {
       currentSlide === imageUrls.length - 1 ? 0 : currentSlide + 1
     );
   };
-  console.log(imageUrls);
   const prevSlide = () => {
     setCurrentSlide(
       currentSlide === 0 ? imageUrls.length - 1 : currentSlide - 1
     );
   };
 
-  const addToCartHandler = (e) => {
+  const addToCartHandler = async (e) => {
     setBtnChange(true);
     setLoading2(true);
-    axios
-      .post(
-        "https://musicart-full-stack-project-backend.onrender.com/getCartProduct",
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/getCartProduct",
         {
           email: userEmail.replace(/"|'/g, ""),
-          AddToCartproductId: id,
+          CartproductId: id,
+        },
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
         }
-      )
-      .then(function (response) {
-        alert(response.data);
-        setLoading2(false);
-        getCartItem();
-      })
-      .catch((err) => {
-        alert(err.message);
-      });
+      );
+      alert(response.data);
+      setLoading2(false);
+      getCartItem();
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  const removeToCartHandler = (e) => {
+  const removeToCartHandler = async (e) => {
     setBtnChange(false);
     setLoading2(true);
-
-    axios
-      .post(
-        "https://musicart-full-stack-project-backend.onrender.com/removeCartProduct",
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/removeCartProduct",
         {
           email: userEmail.replace(/"|'/g, ""),
           productId: id,
+        },
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
         }
-      )
-      .then(function (response) {
-        alert(response.data);
-        getCartItem();
-        setLoading2(false);
-      })
-      .catch((err) => {
-        alert(err.message);
-      });
+      );
+      alert(response.data);
+      getCartItem();
+      setLoading2(false);
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  const buyNowHandler = () => {
+  const buyNowHandler = async () => {
+    console.log(token);
     setLoading3(true);
-    axios
-      .post(
-        "https://musicart-full-stack-project-backend.onrender.com/checkOutProduct",
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/checkOutProduct",
         {
           checkOutProductEmail: userEmail.replace(/"|'/g, ""),
           checkOutProductId: id,
+        },
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
         }
-      )
-      .then(function (response) {
-        setLoading3(false);
-
-        navigate("/checkout");
-      })
-      .catch((err) => {
-        alert(err.message);
-      });
+      );
+      setLoading3(false);
+      console.log(response.data);
+      navigate("/checkout");
+    } catch (error) {
+      alert(error.message);
+    }
   };
-  console.log(currentSlide);
+  const getProductDetails = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/productdetails/" + id
+      );
+      setApiData([response.data]);
+      setLoading(true);
+      setUserEmail(localStorage.getItem("userEmail"));
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
     fetchImages();
   }, [apidata]);
 
   useEffect(() => {
-    axios
-      .get(
-        "https://musicart-full-stack-project-backend.onrender.com/productdetails/" +
-          id
-      )
-      .then((response) => {
-        setApiData([response.data]);
-        setLoading(true);
-      });
-
-    setUserEmail(localStorage.getItem("userEmail"));
+    getProductDetails();
   }, []);
 
   const imageChangeHandler = (e) => {
@@ -152,10 +162,9 @@ const ProductDetailPage = () => {
   return (
     <div>
       <OfferNavbar />
-
+      <Navbar />
       {loading === true ? (
         <div className="productDetailContainer">
-          <Navbar routeHierarchy={apidata ? apidata[0].productName : ""} />
           <div className="productDetailInnerContainer">
             <BackToProductPageBtn home={homeNavigate} />
           </div>
@@ -228,7 +237,7 @@ const ProductDetailPage = () => {
                       </div>
                       <div className="pMobileViewContainer">
                         <div>
-                          {isAuthenticated === true ? (
+                          {isLogin === true ? (
                             <div>
                               {btnChange === false ? (
                                 <button
@@ -317,7 +326,7 @@ const ProductDetailPage = () => {
                   🡠
                 </button>
                 <div>
-                  {isAuthenticated === true ? (
+                  {isLogin === true ? (
                     <div className="mobileViewAddToCartBTnDiv">
                       {loading3 === false ? (
                         <button className="buyNowBtn" onClick={buyNowHandler}>
@@ -382,7 +391,7 @@ const ProductDetailPage = () => {
                     </div>
 
                     <div className="mobileViewAddToCartBTnDiv">
-                      {isAuthenticated === true ? (
+                      {isLogin === true ? (
                         <div className="mobileViewAddToCartBTnDiv">
                           {btnChange === false ? (
                             <button id={data._id} onClick={addToCartHandler}>

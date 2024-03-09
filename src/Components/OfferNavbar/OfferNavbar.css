@@ -1,4 +1,4 @@
-.eghrt {
+.mainContaainer {
   display: flex;
   justify-content: space-between;
   background: #2e0052;
@@ -65,7 +65,7 @@
   }
 }
 @media only screen and (max-width: 660px) {
-  .eghrt {
+  .mainContaainer {
     display: none;
   }
 }

@@ -8,6 +8,8 @@ import Footer from "../../Components/Footer/Footer";
 
 const SuccessPage = () => {
   const navigate = useNavigate();
+  console.log("rstgfgtsdf");
+
   return (
     <div>
       <OfferNavbar />

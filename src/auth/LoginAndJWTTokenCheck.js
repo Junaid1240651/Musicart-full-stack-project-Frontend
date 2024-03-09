@@ -1,24 +1,32 @@
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { userLogin } from "../store/userSlice";
-import { userLogout } from "../store/userSlice";
+import axios from "axios";
+import { useCombinedContext } from "../contextApi/CombinedContextProvider ";
 
 export const LoginAndJWTTokenCheck = () => {
-  const dispatch = useDispatch();
+  const { setIsLogin, setCartItem } = useCombinedContext();
 
-  useEffect(() => {
-    const LoginJwtToken = localStorage.getItem("LoginJwtToken");
-    if (LoginJwtToken) {
-      dispatch(userLogin(true));
-    } else {
-      dispatch(userLogout(false));
+  const verifyUser = async () => {
+    try {
+      const token = localStorage.getItem("LoginJwtToken");
+
+      if (token) {
+        const userVerify = await axios.get("http://localhost:3000/verifyUser", {
+          headers: { Authorization: token.replace(/"/g, "") },
+        });
+
+        if (userVerify.data === true) {
+          setIsLogin(true);
+        } else {
+          setIsLogin(false);
+        }
+      }
+    } catch (error) {
+      console.log(error);
     }
-  }, [dispatch]);
-
+  };
   const handleLogout = () => {
     localStorage.clear();
-    dispatch(userLogout(false));
+    setCartItem([]);
+    setIsLogin(false);
   };
-
-  return { handleLogout };
+  return { verifyUser, handleLogout };
 };

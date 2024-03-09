@@ -140,7 +140,7 @@ Input {
 .column {
   float: left;
   width: 20%;
-  margin-top: 25px;
+  margin-top: 40px;
   cursor: pointer;
 }
 .girlImg {
@@ -249,7 +249,7 @@ Input {
   margin-top: 0px;
 }
 .commonCLass2 {
-  width: 75%;
+  width: 80%;
 }
 .commonCLass {
   width: 100%;
