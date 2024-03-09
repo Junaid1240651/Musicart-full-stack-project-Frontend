@@ -33,6 +33,8 @@ const Home = () => {
   const [inputSearch, setinputSearch] = useState([]);
   const [userEmail, setUserEmail] = useState();
   const { getCartItem } = FetchCartProduct();
+  const { verifyUser } = LoginAndJWTTokenCheck();
+
   const token = localStorage.getItem("LoginJwtToken");
 
   const fetchproduct = async () => {
@@ -53,7 +55,6 @@ const Home = () => {
         }
       );
       setApiData(response.data);
-      // console.log(response.data);
       setLoading(true);
     } catch (error) {
       console.log(error);
@@ -62,9 +63,7 @@ const Home = () => {
   useEffect(() => {
     fetchproduct();
   }, [headPhoneType, companyType, headPhoneColor, headPhonePrice, inputSearch]);
-  // useEffect(() => {
-  //   LoginAndJWTTokenCheck();
-  // }, []);
+
   useEffect(() => {});
   const resetFilterHandler = () => {
     setHeadPhoneType([]);
@@ -111,6 +110,7 @@ const Home = () => {
 
   useEffect(() => {
     setUserEmail(localStorage.getItem("userEmail"));
+    verifyUser();
   }, []);
 
   return (
