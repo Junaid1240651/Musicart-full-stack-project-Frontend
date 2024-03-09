@@ -23,12 +23,19 @@ function App() {
   useEffect(() => {
     verifyUser();
   }, []);
+
   return (
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="register" element={<Register />} />
-          <Route path="login" element={<Login />} />
+          <Route
+            path="register"
+            element={!isLogin ? <Register /> : <Navigate to="/" />}
+          />
+          <Route
+            path="login"
+            element={!isLogin ? <Login /> : <Navigate to="/" />}
+          />
           <Route path="/" element={<Home />} />
           <Route path="productdetails/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<Cart />} />

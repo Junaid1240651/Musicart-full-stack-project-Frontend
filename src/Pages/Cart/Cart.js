@@ -29,7 +29,7 @@ const Cart = () => {
     setbtnId(id);
     try {
       await axios.post(
-        "http://localhost:3000/getCartProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/getCartProduct",
         {
           productQuantity: index3,
           cartUpdateId: id,
@@ -53,7 +53,7 @@ const Cart = () => {
     setLoading2(true);
     try {
       await axios.post(
-        "http://localhost:3000/checkOutProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/checkOutProduct",
         {
           placeOrderHandler: "placeOrderHandler",
         },
@@ -94,7 +94,7 @@ const Cart = () => {
     const productId = e.target.id;
     try {
       const response = await axios.post(
-        "http://localhost:3000/removeCartProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/removeCartProduct",
         {
           productId: productId,
         },

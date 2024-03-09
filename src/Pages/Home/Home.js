@@ -37,18 +37,21 @@ const Home = () => {
 
   const fetchproduct = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/", {
-        params: {
-          headPhoneType: headPhoneType,
-          companyType: companyType,
-          headPhoneColor: headPhoneColor,
-          headPhonePrice: headPhonePrice,
-          inputSearch: inputSearch,
-        },
-        headers: {
-          Authorization: token,
-        },
-      });
+      const response = await axios.get(
+        "https://musicart-full-stack-project-backend.onrender.com",
+        {
+          params: {
+            headPhoneType: headPhoneType,
+            companyType: companyType,
+            headPhoneColor: headPhoneColor,
+            headPhonePrice: headPhonePrice,
+            inputSearch: inputSearch,
+          },
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
       setApiData(response.data);
       // console.log(response.data);
       setLoading(true);
@@ -88,7 +91,7 @@ const Home = () => {
     setcartId(id);
     try {
       const response = await axios.post(
-        "http://localhost:3000/getCartProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/getCartProduct",
         {
           email: userEmail.replace(/"|'/g, ""),
           CartproductId: id,

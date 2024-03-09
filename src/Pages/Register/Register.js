@@ -81,12 +81,15 @@ const Register = () => {
 
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/register", {
-        name: input.Name,
-        number: input.Number,
-        email: input.Email,
-        password: input.Password,
-      });
+      const response = await axios.post(
+        "https://musicart-full-stack-project-backend.onrender.com/register",
+        {
+          name: input.Name,
+          number: input.Number,
+          email: input.Email,
+          password: input.Password,
+        }
+      );
       localStorage.setItem(
         "LoginJwtToken",
         JSON.stringify(response.data.token)

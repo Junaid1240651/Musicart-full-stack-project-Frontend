@@ -9,9 +9,12 @@ export const LoginAndJWTTokenCheck = () => {
       const token = localStorage.getItem("LoginJwtToken");
 
       if (token) {
-        const userVerify = await axios.get("http://localhost:3000/verifyUser", {
-          headers: { Authorization: token.replace(/"/g, "") },
-        });
+        const userVerify = await axios.get(
+          "https://musicart-full-stack-project-backend.onrender.com/verifyUser",
+          {
+            headers: { Authorization: token.replace(/"/g, "") },
+          }
+        );
 
         if (userVerify.data === true) {
           setIsLogin(true);

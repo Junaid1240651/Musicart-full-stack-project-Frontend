@@ -12,11 +12,14 @@ export const FetchCartProduct = () => {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/getCartProduct", {
-        headers: {
-          Authorization: token.replace(/"/g, ""),
-        },
-      });
+      const response = await axios.get(
+        "https://musicart-full-stack-project-backend.onrender.com/getCartProduct",
+        {
+          headers: {
+            Authorization: token.replace(/"/g, ""),
+          },
+        }
+      );
 
       setCartItem(response.data);
     } catch (error) {

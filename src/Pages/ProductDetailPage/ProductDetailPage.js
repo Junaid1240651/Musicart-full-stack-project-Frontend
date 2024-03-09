@@ -70,7 +70,7 @@ const ProductDetailPage = () => {
     setLoading2(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/getCartProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/getCartProduct",
         {
           email: userEmail.replace(/"|'/g, ""),
           CartproductId: id,
@@ -94,7 +94,7 @@ const ProductDetailPage = () => {
     setLoading2(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/removeCartProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/removeCartProduct",
         {
           email: userEmail.replace(/"|'/g, ""),
           productId: id,
@@ -118,7 +118,7 @@ const ProductDetailPage = () => {
     setLoading3(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/checkOutProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/checkOutProduct",
         {
           checkOutProductEmail: userEmail.replace(/"|'/g, ""),
           checkOutProductId: id,
@@ -139,7 +139,8 @@ const ProductDetailPage = () => {
   const getProductDetails = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3000/productdetails/" + id
+        "https://musicart-full-stack-project-backend.onrender.com/productdetails/" +
+          id
       );
       setApiData([response.data]);
       setLoading(true);

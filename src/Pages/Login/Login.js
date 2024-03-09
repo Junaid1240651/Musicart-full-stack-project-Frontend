@@ -60,10 +60,13 @@ const Login = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:3000/login", {
-        email: input.EmailNumber,
-        password: input.Password,
-      });
+      const response = await axios.post(
+        "https://musicart-full-stack-project-backend.onrender.com/login",
+        {
+          email: input.EmailNumber,
+          password: input.Password,
+        }
+      );
       localStorage.setItem(
         "LoginJwtToken",
         JSON.stringify(response.data.token)

@@ -29,7 +29,7 @@ const CheckOutPage = () => {
 
       await axios;
       const response = await axios.post(
-        "http://localhost:3000/orderProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/orderProduct",
         {
           email: userEmail.replace(/"|'/g, ""),
         },
@@ -54,7 +54,7 @@ const CheckOutPage = () => {
   useEffect(() => {
     checkOutProduct();
   }, [cartItem]);
-  console.log("rstgfgtsdf");
+
   const cartProduct = async () => {
     const result = await FetchCartProduct();
     getCartItem(result);
@@ -62,7 +62,7 @@ const CheckOutPage = () => {
   const checkOutProduct = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3000/checkOutProduct",
+        "https://musicart-full-stack-project-backend.onrender.com/checkOutProduct",
         {
           headers: {
             Authorization: token.replace(/"/g, ""),
